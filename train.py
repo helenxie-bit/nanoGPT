@@ -21,6 +21,7 @@ import time
 import math
 import pickle
 from contextlib import nullcontext
+import argparse
 
 import numpy as np
 import torch
@@ -28,6 +29,8 @@ from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.distributed import init_process_group, destroy_process_group
 
 from model import GPTConfig, GPT
+
+import matplotlib.pyplot as plt
 
 # -----------------------------------------------------------------------------
 # default config values designed to train a gpt2 (124M) on OpenWebText
@@ -72,6 +75,14 @@ backend = 'nccl' # 'nccl', 'gloo', etc.
 device = 'cuda' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1' etc., or try 'mps' on macbooks
 dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16' # 'float32', 'bfloat16', or 'float16', the latter will auto implement a GradScaler
 compile = True # use PyTorch 2.0 to compile the model to be faster
+
+# play with some configs
+sliding_window_attention = False # if True, use sliding window attention
+window_size = 3 # if sliding_window_attention, this is the size of the window
+mlp_type = 'type1' # if 'type1', use the standard MLP: fc2(ReLu(fc1(x))), if 'type2', use the another version: fc3(ReLu(fc1(x)) * fc2(x)))
+n_regist = 0 # if > 0, add register tokens
+custom_softmax = False # if True, use custom softmax
+
 # -----------------------------------------------------------------------------
 config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]
 exec(open('configurator.py').read()) # overrides from command line or config file
@@ -145,7 +156,7 @@ if os.path.exists(meta_path):
 
 # model init
 model_args = dict(n_layer=n_layer, n_head=n_head, n_embd=n_embd, block_size=block_size,
-                  bias=bias, vocab_size=None, dropout=dropout) # start with model_args from command line
+                  bias=bias, vocab_size=None, dropout=dropout, sliding_window_attention=sliding_window_attention, window_size=window_size, mlp_type=mlp_type) # start with model_args from command line
 if init_from == 'scratch':
     # init a new model from scratch
     print("Initializing a new model from scratch")
@@ -252,6 +263,11 @@ t0 = time.time()
 local_iter_num = 0 # number of iterations in the lifetime of this process
 raw_model = model.module if ddp else model # unwrap DDP container if needed
 running_mfu = -1.0
+
+train_losses = []
+val_losses = []
+iter_nums = []
+
 while True:
 
     # determine and set the learning rate for this iteration
@@ -263,6 +279,9 @@ while True:
     if iter_num % eval_interval == 0 and master_process:
         losses = estimate_loss()
         print(f"step {iter_num}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+        train_losses.append(losses['train'])
+        val_losses.append(losses['val'])
+        iter_nums.append(iter_num)
         if wandb_log:
             wandb.log({
                 "iter": iter_num,
@@ -331,6 +350,17 @@ while True:
     # termination conditions
     if iter_num > max_iters:
         break
+
+def plot_losses(train_losses, val_losses, iter_nums):
+    plt.plot(iter_nums, train_losses, label='train')
+    plt.plot(iter_nums, val_losses, label='val')
+    plt.xlabel('iteration')
+    plt.ylabel('loss')
+    plt.legend()
+    plt.savefig(f'loss_plot_iter.png')
+    plt.close()
+
+plot_losses(train_losses, val_losses, iter_nums)
 
 if ddp:
     destroy_process_group()
