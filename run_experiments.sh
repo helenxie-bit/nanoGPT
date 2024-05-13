@@ -34,7 +34,7 @@ python train.py config/train_shakespeare_char.py --n_regist=5 --wandb_log=True
 
 # Configuration with sliding window attention and register tokens
 echo "Running configuration with sliding window attention and register tokens (window_size = 3, n_regist=1)..."
-python train.py config/train_shakespeare_char.py --sliding_window_attention=True --window_size=4 --n_regist=1 --wandb_log=True
+python train.py config/train_shakespeare_char.py --sliding_window_attention=True --window_size=3 --n_regist=1 --wandb_log=True
 
 # Configuration with different softmax layer
 echo "Running configuration with different softmax layer..."

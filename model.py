@@ -97,6 +97,7 @@ class SlidingWindowAttention(nn.Module):
         self.n_embd = config.n_embd
         self.dropout = config.dropout
         self.window_size = config.window_size
+        self.n_regist = config.n_regist
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
         self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
         if not self.flash:
@@ -105,6 +106,8 @@ class SlidingWindowAttention(nn.Module):
             mask = torch.zeros(config.block_size, config.block_size)
             for i in range(config.block_size):
                 mask[i, max(0, i - config.window_size):min(config.block_size - 1, i + config.window_size + 1)] = 1
+                if self.n_regist > 0:
+                    mask[i, :self.n_regist] = 1
             self.register_buffer("bias", mask.view(1, 1, config.block_size, config.block_size))
         self.custom_softmax = config.custom_softmax
 
@@ -256,7 +259,7 @@ class GPT(nn.Module):
         # Initialize register tokens
         register_tokens = torch.randint(high=self.config.vocab_size-1, size=(b, self.config.n_regist), device=device).type(idx.dtype)
         # Concatenate register tokens with input
-        idx = torch.cat([idx, register_tokens], dim=1)
+        idx = torch.cat([register_tokens, idx], dim=1)
         b, t = idx.size()
 
         assert t <= self.config.block_size, f"Cannot forward sequence of length {t}, block size is only {self.config.block_size}"
@@ -272,7 +275,7 @@ class GPT(nn.Module):
 
         # Correspondingly padding targets to match the output
         padding = -1 * torch.ones((targets.size(0), self.config.n_regist), dtype=torch.long, device=targets.device)
-        targets = torch.cat([targets, padding], dim=1)
+        targets = torch.cat([padding, targets], dim=1)
 
         if targets is not None:
             # if we are given some desired targets also calculate the loss
