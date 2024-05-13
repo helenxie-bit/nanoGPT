@@ -351,16 +351,17 @@ while True:
     if iter_num > max_iters:
         break
 
-def plot_losses(train_losses, val_losses, iter_nums):
+def plot_losses(train_losses, val_losses, iter_nums, config_str):
     plt.plot(iter_nums, train_losses, label='train')
     plt.plot(iter_nums, val_losses, label='val')
     plt.xlabel('iteration')
     plt.ylabel('loss')
     plt.legend()
-    plt.savefig(f'loss_plot_iter.png')
+    plt.savefig(f'loss_plot_{config_str}.png')
     plt.close()
 
-plot_losses(train_losses, val_losses, iter_nums)
+config_str = f"sliding_window_attention_{sliding_window_attention}_window_size_{window_size}_mlp_type_{mlp_type}_n_regist_{n_regist}_custom_softmax_{custom_softmax}"
+plot_losses(train_losses, val_losses, iter_nums, config_str)
 
 if ddp:
     destroy_process_group()
