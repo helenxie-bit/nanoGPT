@@ -105,7 +105,7 @@ class SlidingWindowAttention(nn.Module):
             # sliding window mask to ensure that attention is only applied to the fixed context window
             mask = torch.zeros(config.block_size, config.block_size)
             for i in range(config.block_size):
-                mask[i, max(0, i - config.window_size):min(config.block_size - 1, i + config.window_size + 1)] = 1
+                mask[i, max(0, i - config.window_size):min(config.block_size, i + config.window_size + 1)] = 1
                 if self.n_regist > 0:
                     mask[i, :self.n_regist] = 1
             self.register_buffer("bias", mask.view(1, 1, config.block_size, config.block_size))
