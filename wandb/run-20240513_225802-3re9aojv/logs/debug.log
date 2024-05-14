@@ -1,0 +1,28 @@
+2024-05-13 22:58:02,138 INFO    MainThread:24422 [wandb_setup.py:_flush():76] Current SDK version is 0.17.0
+2024-05-13 22:58:02,139 INFO    MainThread:24422 [wandb_setup.py:_flush():76] Configure stats pid to 24422
+2024-05-13 22:58:02,140 INFO    MainThread:24422 [wandb_setup.py:_flush():76] Loading settings from /root/.config/wandb/settings
+2024-05-13 22:58:02,141 INFO    MainThread:24422 [wandb_setup.py:_flush():76] Loading settings from /content/gdrive/MyDrive/nanoGPT/wandb/settings
+2024-05-13 22:58:02,141 INFO    MainThread:24422 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2024-05-13 22:58:02,141 INFO    MainThread:24422 [wandb_setup.py:_flush():76] Applying setup settings: {'_disable_service': False}
+2024-05-13 22:58:02,141 INFO    MainThread:24422 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'train.py', 'program_abspath': '/content/gdrive/MyDrive/nanoGPT/train.py', 'program': '/content/gdrive/MyDrive/nanoGPT/train.py'}
+2024-05-13 22:58:02,141 INFO    MainThread:24422 [wandb_setup.py:_flush():76] Applying login settings: {}
+2024-05-13 22:58:02,142 INFO    MainThread:24422 [wandb_init.py:_log_setup():520] Logging user logs to /content/gdrive/MyDrive/nanoGPT/wandb/run-20240513_225802-3re9aojv/logs/debug.log
+2024-05-13 22:58:02,142 INFO    MainThread:24422 [wandb_init.py:_log_setup():521] Logging internal logs to /content/gdrive/MyDrive/nanoGPT/wandb/run-20240513_225802-3re9aojv/logs/debug-internal.log
+2024-05-13 22:58:02,142 INFO    MainThread:24422 [wandb_init.py:init():560] calling init triggers
+2024-05-13 22:58:02,142 INFO    MainThread:24422 [wandb_init.py:init():567] wandb.init called with sweep_config: {}
+config: {'out_dir': 'out-shakespeare-char', 'eval_interval': 250, 'log_interval': 10, 'eval_iters': 200, 'eval_only': False, 'always_save_checkpoint': False, 'init_from': 'scratch', 'wandb_log': True, 'wandb_project': 'shakespeare-char', 'wandb_run_name': 'mini-gpt', 'dataset': 'shakespeare_char', 'gradient_accumulation_steps': 1, 'batch_size': 64, 'block_size': 256, 'n_layer': 6, 'n_head': 6, 'n_embd': 384, 'dropout': 0.2, 'bias': False, 'learning_rate': 0.001, 'max_iters': 5000, 'weight_decay': 0.1, 'beta1': 0.9, 'beta2': 0.99, 'grad_clip': 1.0, 'decay_lr': True, 'warmup_iters': 100, 'lr_decay_iters': 1000, 'min_lr': 0.0001, 'backend': 'nccl', 'device': 'cuda', 'dtype': 'float16', 'compile': True, 'sliding_window_attention': True, 'window_size': 3, 'mlp_type': 'type1', 'n_regist': 0, 'custom_softmax': False}
+2024-05-13 22:58:02,143 INFO    MainThread:24422 [wandb_init.py:init():610] starting backend
+2024-05-13 22:58:02,143 INFO    MainThread:24422 [wandb_init.py:init():614] setting up manager
+2024-05-13 22:58:02,148 INFO    MainThread:24422 [backend.py:_multiprocessing_setup():105] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2024-05-13 22:58:02,149 INFO    MainThread:24422 [wandb_init.py:init():622] backend started and connected
+2024-05-13 22:58:02,160 INFO    MainThread:24422 [wandb_init.py:init():711] updated telemetry
+2024-05-13 22:58:02,212 INFO    MainThread:24422 [wandb_init.py:init():744] communicating run to backend with 90.0 second timeout
+2024-05-13 22:58:02,492 INFO    MainThread:24422 [wandb_run.py:_on_init():2396] communicating current version
+2024-05-13 22:58:02,625 INFO    MainThread:24422 [wandb_run.py:_on_init():2405] got version response 
+2024-05-13 22:58:02,626 INFO    MainThread:24422 [wandb_init.py:init():795] starting run threads in backend
+2024-05-13 22:58:03,154 INFO    MainThread:24422 [wandb_run.py:_console_start():2374] atexit reg
+2024-05-13 22:58:03,155 INFO    MainThread:24422 [wandb_run.py:_redirect():2229] redirect: wrap_raw
+2024-05-13 22:58:03,155 INFO    MainThread:24422 [wandb_run.py:_redirect():2294] Wrapping output streams.
+2024-05-13 22:58:03,156 INFO    MainThread:24422 [wandb_run.py:_redirect():2319] Redirects installed.
+2024-05-13 22:58:03,158 INFO    MainThread:24422 [wandb_init.py:init():838] run started, returning control to user process
+2024-05-13 23:12:13,075 WARNING MsgRouterThr:24422 [router.py:message_loop():77] message_loop has been closed
