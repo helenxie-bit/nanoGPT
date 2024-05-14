@@ -99,16 +99,16 @@ class SlidingWindowAttention(nn.Module):
         self.window_size = config.window_size
         self.n_regist = config.n_regist
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
-        self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
-        if not self.flash:
-            print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
-            # sliding window mask to ensure that attention is only applied to the fixed context window
-            self.mask = torch.zeros(config.block_size, config.block_size)
-            for i in range(config.block_size):
-                self.mask[i, max(0, i - config.window_size):min(config.block_size, i + config.window_size + 1)] = 1
-                if self.n_regist > 0:
-                    self.mask[i, :self.n_regist] = 1
-            self.register_buffer("bias", self.mask.view(1, 1, config.block_size, config.block_size))
+        # self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
+        # if not self.flash:
+            # print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
+        # sliding window mask to ensure that attention is only applied to the fixed context window
+        self.mask = torch.zeros(config.block_size, config.block_size)
+        for i in range(config.block_size):
+            self.mask[i, max(0, i - config.window_size):min(config.block_size, i + config.window_size + 1)] = 1
+            if self.n_regist > 0:
+                self.mask[i, :self.n_regist] = 1
+        self.register_buffer("bias", self.mask.view(1, 1, config.block_size, config.block_size))
         self.custom_softmax = config.custom_softmax
 
     def forward(self, x):
@@ -121,16 +121,16 @@ class SlidingWindowAttention(nn.Module):
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
 
         # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
-        if self.flash:
+        # if self.flash:
             # efficient attention using Flash Attention CUDA kernels
-            y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=self.dropout if self.training else 0, is_causal=True)
-        else:
-            # manual implementation of attention
-            att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
-            att = att.masked_fill(self.mask[:,:,:T,:T] == 0, float('-inf'))
-            att = CustomSoftmax()(att) if self.custom_softmax else F.softmax(att, dim=-1)
-            att = self.attn_dropout(att)
-            y = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
+            # y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=self.dropout if self.training else 0, is_causal=True)
+        # else:
+        # manual implementation of attention
+        att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
+        att = att.masked_fill(self.mask[:,:,:T,:T] == 0, float('-inf'))
+        att = CustomSoftmax()(att) if self.custom_softmax else F.softmax(att, dim=-1)
+        att = self.attn_dropout(att)
+        y = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
 
         # output projection
