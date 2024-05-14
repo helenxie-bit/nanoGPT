@@ -19,6 +19,7 @@ def plot_loss(train_losses, val_losses, title):
     plt.ylabel('Loss')
     plt.title(title)
     plt.legend()
+    plt.savefig('loss_plot.png')
     plt.show()
 
 parser = argparse.ArgumentParser()
