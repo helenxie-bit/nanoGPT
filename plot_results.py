@@ -10,16 +10,29 @@ def parse_log_file(file_path):
     return train_loss, val_loss
 
 def plot_loss(train_losses, val_losses, title):
-    for i, (train_loss, val_loss) in enumerate(zip(train_losses, val_losses)):
+    # Plot train loss
+    plt.figure()  # create a new figure for train loss
+    for i, train_loss in enumerate(train_losses):
         train_iters, train_loss_values = zip(*train_loss)
-        val_iters, val_loss_values = zip(*val_loss)
         plt.plot(train_iters, train_loss_values, label=f'Run {i+1} Train Loss')
-        plt.plot(val_iters, val_loss_values, label=f'Run {i+1} Val Loss')
     plt.xlabel('Iteration')
     plt.ylabel('Loss')
-    plt.title(title)
+    plt.title(title + ' - Train Loss')
     plt.legend()
-    plt.savefig('loss_plot.png')
+    plt.savefig('train_loss_plot.png')
+    plt.show()
+
+    # Plot val loss
+    plt.figure()  # create a new figure for val loss
+    for i, val_loss in enumerate(val_losses):
+        if val_loss:  # check if val_loss is not empty
+            val_iters, val_loss_values = zip(*val_loss)
+            plt.plot(val_iters, val_loss_values, label=f'Run {i+1} Val Loss')
+    plt.xlabel('Iteration')
+    plt.ylabel('Loss')
+    plt.title(title + ' - Val Loss')
+    plt.legend()
+    plt.savefig('val_loss_plot.png')
     plt.show()
 
 parser = argparse.ArgumentParser()
