@@ -5,8 +5,8 @@ import argparse
 def parse_log_file(file_path):
     with open(file_path, 'r') as f:
         content = f.read()
-    train_loss = re.findall(r'step (\d+): train loss ([\d\.]+)', content)
-    val_loss = re.findall(r'step (\d+): train loss [\d\.]+, val loss ([\d\.]+)', content)
+    train_loss = [(int(step), float(loss)) for step, loss in re.findall(r'step (\d+): train loss ([\d\.]+)', content)]
+    val_loss = [(int(step), float(loss)) for step, loss in re.findall(r'step (\d+): train loss [\d\.]+, val loss ([\d\.]+)', content)]
     return train_loss, val_loss
 
 def plot_loss(train_losses, val_losses, title):
