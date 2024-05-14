@@ -103,13 +103,13 @@ class SlidingWindowAttention(nn.Module):
         # if not self.flash:
             # print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
         # sliding window mask to ensure that attention is only applied to the fixed context window
-        self.bias = torch.zeros(config.block_size, config.block_size)
+        self.mask = torch.zeros(config.block_size, config.block_size)
         for i in range(config.block_size):
-            self.bias[i, max(0, i - config.window_size):i+1] = 1
+            self.mask[i, max(0, i - config.window_size):i+1] = 1
             if self.n_regist > 0:
-                self.bias[i, :self.n_regist] = 1
-        self.bias = self.bias.bool()
-        self.register_buffer("bias", self.bias.view(1, 1, config.block_size, config.block_size))
+                self.mask[i, :self.n_regist] = 1
+        self.mask = self.mask.bool()
+        self.register_buffer("bias", self.mask.view(1, 1, config.block_size, config.block_size))
         self.custom_softmax = config.custom_softmax
 
     def forward(self, x):
