@@ -75,6 +75,8 @@ compile = True # use PyTorch 2.0 to compile the model to be faster
 
 # new parameters
 head_size = 64
+window_size = 100
+is_causal = True
 
 # -----------------------------------------------------------------------------
 config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]
