@@ -77,6 +77,7 @@ compile = True # use PyTorch 2.0 to compile the model to be faster
 head_size = 64
 window_size = 100
 is_causal = True
+mlp_type = 'mlp1'
 
 # -----------------------------------------------------------------------------
 config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]

@@ -144,7 +144,7 @@ class SlidingWindowAttention(nn.Module):
         y = self.resid_dropout(self.c_proj(y))
         return y
 
-class MLP(nn.Module):
+class MLP1(nn.Module):
 
     def __init__(self, config):
         super().__init__()
@@ -160,6 +160,24 @@ class MLP(nn.Module):
         x = self.dropout(x)
         return x
 
+class MLP2(nn.Module):
+
+    def __init__(self, config):
+        super().__init__()
+        self.c_fc    = nn.Linear(config.n_embd, 4 * config.n_embd, bias=config.bias)
+        self.gelu    = nn.GELU()
+        self.c_proj  = nn.Linear(4 * config.n_embd, config.n_embd, bias=config.bias)
+        self.dropout = nn.Dropout(config.dropout)
+
+    def forward(self, x):
+        x1 = self.c_fc(x)
+        x2 = self.c_fc(x)
+        x = x1 * x2
+        x = self.gelu(x)
+        x = self.c_proj(x)
+        x = self.dropout(x)
+        return x
+
 class Block(nn.Module):
 
     def __init__(self, config):
@@ -167,7 +185,7 @@ class Block(nn.Module):
         self.ln_1 = LayerNorm(config.n_embd, bias=config.bias)
         self.attn = CausalSelfAttention(config) if config.is_causal else SlidingWindowAttention(config)
         self.ln_2 = LayerNorm(config.n_embd, bias=config.bias)
-        self.mlp = MLP(config)
+        self.mlp = MLP1(config) if config.mlp_type == 'mlp1' else MLP2(config)
 
     def forward(self, x):
         x = x + self.attn(self.ln_1(x))
@@ -187,6 +205,7 @@ class GPTConfig:
     head_size: int = 64
     window_size: int = 100
     is_causal: bool = True
+    mlp_type: str = 'mlp1' # 'mlp1' or 'mlp2'
 
 class GPT(nn.Module):
 
