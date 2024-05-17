@@ -78,11 +78,11 @@ compile = True # use PyTorch 2.0 to compile the model to be faster
 
 # play with some configs
 head_size = 64
-sliding_window_attention = False # if True, use sliding window attention
-window_size = 3 # if sliding_window_attention, this is the size of the window
-mlp_type = 'type1' # if 'type1', use the standard MLP: fc2(ReLu(fc1(x))), if 'type2', use the another version: fc3(ReLu(fc1(x)) * fc2(x)))
-n_regist = 0 # if > 0, add register tokens
-custom_softmax = False # if True, use custom softmax
+#sliding_window_attention = False # if True, use sliding window attention
+#window_size = 3 # if sliding_window_attention, this is the size of the window
+#mlp_type = 'type1' # if 'type1', use the standard MLP: fc2(ReLu(fc1(x))), if 'type2', use the another version: fc3(ReLu(fc1(x)) * fc2(x)))
+#n_regist = 0 # if > 0, add register tokens
+#custom_softmax = False # if True, use custom softmax
 
 # -----------------------------------------------------------------------------
 config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]
