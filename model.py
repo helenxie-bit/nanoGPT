@@ -53,12 +53,12 @@ class CausalSelfAttention(nn.Module):
         self.is_causal = config.is_causal
         self.abs_softmax = config.abs_softmax
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
-        self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
-        if not self.flash:
-            print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
-            # causal mask to ensure that attention is only applied to the left in the input sequence
-            self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size))
-                                        .view(1, 1, config.block_size, config.block_size))
+        # self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
+        # if not self.flash:
+        print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
+        # causal mask to ensure that attention is only applied to the left in the input sequence
+        self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size))
+                                    .view(1, 1, config.block_size, config.block_size))
 
     def forward(self, x):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
@@ -118,7 +118,7 @@ class SlidingWindowAttention(nn.Module):
         self.n_regist = config.n_regist
         self.abs_softmax = config.abs_softmax
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
-        self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
+        # self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
         # sliding window mask to ensure that attention is only applied to the fixed context window
         self.mask = torch.zeros(config.block_size, config.block_size)
         for i in range(config.block_size):
@@ -126,9 +126,9 @@ class SlidingWindowAttention(nn.Module):
             if self.n_regist > 0:
                 self.mask[i, :self.n_regist] = 1
         self.mask = self.mask.bool()
-        if not self.flash:
-            print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
-            self.register_buffer("bias", self.mask.view(1, 1, config.block_size, config.block_size))
+        # if not self.flash:
+        print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
+        self.register_buffer("bias", self.mask.view(1, 1, config.block_size, config.block_size))
 
     def forward(self, x):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
