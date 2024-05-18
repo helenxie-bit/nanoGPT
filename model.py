@@ -289,7 +289,9 @@ class GPT(nn.Module):
             logits = self.lm_head(x)
             print(logits.type(), logits.shape, targets.type(), targets.shape)
             if self.config.n_regist > 0:
-                loss = F.cross_entropy(logits[:, self.config.n_regist:].view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
+                logits = logits[:, self.config.n_regist:]
+                logits = logits.contiguous() 
+                loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
             else:
                 loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
         else:
