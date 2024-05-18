@@ -12,7 +12,7 @@ def parse_log_file(file_path):
 
 # ----------------------------
 # Plot the results of different dimensionality
-file_paths = ["output_1.log", "output_2.log", "output_3.log"]
+file_paths = ["output.log", "output_head_size_32.log", "output_head_size_8.log"]
 train_losses = []
 val_losses = []
 for file_path in file_paths:
@@ -22,32 +22,32 @@ for file_path in file_paths:
 
 # Plot train loss
 plt.figure()  # create a new figure for train loss
-for train_loss, configuration in zip(train_losses, ['n_embd/n_head=384/6=64', 'n_embd/n_head=192/6=32', 'n_embd/n_head=48/6=8']):
+for train_loss, configuration in zip(train_losses, ['size of q,k = 64', 'size of q,k = 32', 'size of q,k = 8']):
     train_iters, train_loss_values = zip(*train_loss)
     plt.plot(train_iters, train_loss_values, label=f'{configuration}')
 plt.xlabel('Iteration')
 plt.ylabel('Loss')
 plt.title('Train Loss')
 plt.legend()
-plt.savefig('train_loss_plot_2.png')
+plt.savefig('train_loss_plot_1.png')
 plt.show()
 
 # Plot val loss
 plt.figure()  # create a new figure for val loss
-for val_loss, configuration in zip(val_losses, ['n_embd/n_head=384/6=64', 'n_embd/n_head=192/6=32', 'n_embd/n_head=48/6=8']):
+for val_loss, configuration in zip(val_losses, ['size of q,k = 64', 'size of q,k = 32', 'size of q,k = 8']):
     val_iters, val_loss_values = zip(*val_loss)
     plt.plot(val_iters, val_loss_values, label=f'{configuration}')
 plt.xlabel('Iteration')
 plt.ylabel('Loss')
 plt.title('Val Loss')
 plt.legend()
-plt.savefig('val_loss_plot_2.png')
+plt.savefig('val_loss_plot_1.png')
 plt.show()
 
 
 # ----------------------------
 # Plot the results of sliding window attention
-file_paths = ["output_1.log", "output_4.log", "output_5.log", "output_6.log"]
+file_paths = ["output.log", "output_window_size_100.log", "output_window_size_10.log", "output_window_size_3.log"]
 train_losses = []
 val_losses = []
 for file_path in file_paths:
@@ -64,7 +64,7 @@ plt.xlabel('Iteration')
 plt.ylabel('Loss')
 plt.title('Train Loss')
 plt.legend()
-plt.savefig('train_loss_plot_3.png')
+plt.savefig('train_loss_plot_2.png')
 plt.show()
 
 # Plot val loss
@@ -76,13 +76,13 @@ plt.xlabel('Iteration')
 plt.ylabel('Loss')
 plt.title('Val Loss')
 plt.legend()
-plt.savefig('val_loss_plot_3.png')
+plt.savefig('val_loss_plot_2.png')
 plt.show()
 
 
 # ----------------------------
 # Plot the results of different mlp
-file_paths = ["output_1.log", "output_7.log"]
+file_paths = ["output.log", "output_mlp2.log"]
 train_losses = []
 val_losses = []
 for file_path in file_paths:
@@ -99,7 +99,7 @@ plt.xlabel('Iteration')
 plt.ylabel('Loss')
 plt.title('Train Loss')
 plt.legend()
-plt.savefig('train_loss_plot_4.png')
+plt.savefig('train_loss_plot_3.png')
 plt.show()
 
 # Plot val loss
@@ -111,10 +111,10 @@ plt.xlabel('Iteration')
 plt.ylabel('Loss')
 plt.title('Val Loss')
 plt.legend()
-plt.savefig('val_loss_plot_4.png')
+plt.savefig('val_loss_plot_3.png')
 plt.show()
 
-
+'''
 # ----------------------------
 # Plot the results of adding register tokens
 file_paths = ["output_1.log", "output_8.log", "output_9.log"]
@@ -218,3 +218,4 @@ plt.title('Val Loss')
 plt.legend()
 plt.savefig('val_loss_plot_7.png')
 plt.show()
+'''
