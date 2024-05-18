@@ -81,7 +81,8 @@ class CausalSelfAttention(nn.Module):
         att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
         if self.abs_softmax:
             att = att.masked_fill(self.bias[:,:,:T,:T] == 0, 0.0)
-            att = AbsSoftmax(att)
+            abs_softmax_function = AbsSoftmax()
+            att = abs_softmax_function(att)
         else:
             att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float('-inf'))
             att = F.softmax(att, dim=-1)
@@ -152,7 +153,8 @@ class SlidingWindowAttention(nn.Module):
         att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
         if self.abs_softmax:
             att = att.masked_fill(self.bias[:,:,:T,:T] == 0, 0.0)
-            att = AbsSoftmax(att)
+            abs_softmax_function = AbsSoftmax()
+            att = abs_softmax_function(att)
         else:
             att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float('-inf'))
             att = F.softmax(att, dim=-1)
