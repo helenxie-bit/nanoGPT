@@ -111,6 +111,7 @@ class SlidingWindowAttention(nn.Module):
         self.mask = torch.zeros(config.block_size, config.block_size)
         for i in range(config.block_size):
             self.mask[i, max(0, i - config.window_size):i+1] = 1
+        self.mask = self.mask.bool()
         if not self.flash:
             print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
             self.register_buffer("bias", self.mask.view(1, 1, config.block_size, config.block_size))
