@@ -105,12 +105,15 @@ class SlidingWindowAttention(nn.Module):
         self.window_size = config.window_size
         self.dropout = config.dropout
         self.is_causal = config.is_causal
+        self.n_regist = config.n_regist
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
         self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
         # sliding window mask to ensure that attention is only applied to the fixed context window
         self.mask = torch.zeros(config.block_size, config.block_size)
         for i in range(config.block_size):
             self.mask[i, max(0, i - config.window_size):i+1] = 1
+            if self.n_regist > 0:
+                self.mask[i, :self.n_regist] = 1
         self.mask = self.mask.bool()
         if not self.flash:
             print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
