@@ -131,6 +131,7 @@ class SlidingWindowAttention(nn.Module):
         # sliding window attention; (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
         if self.flash:
             # efficient attention using Flash Attention CUDA kernels
+            self.mask = self.mask.to(x.device)
             y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=self.mask, dropout_p=self.dropout if self.training else 0, is_causal=self.is_causal)
         else:
             # manual implementation of attention
