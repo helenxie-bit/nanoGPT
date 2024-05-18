@@ -206,6 +206,7 @@ class GPTConfig:
     window_size: int = 100
     is_causal: bool = True
     mlp_type: str = 'mlp1' # 'mlp1' or 'mlp2'
+    n_regist: int = 0
 
 class GPT(nn.Module):
 
@@ -262,13 +263,23 @@ class GPT(nn.Module):
     def forward(self, idx, targets=None):
         device = idx.device
         b, t = idx.size()
-        assert t <= self.config.block_size, f"Cannot forward sequence of length {t}, block size is only {self.config.block_size}"
+        assert t + self.config.n_regist <= self.config.block_size, f"Cannot forward sequence of length {t}, block size is only {self.config.block_size}"
         pos = torch.arange(0, t, dtype=torch.long, device=device) # shape (t)
 
         # forward the GPT model itself
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
         pos_emb = self.transformer.wpe(pos) # position embeddings of shape (t, n_embd)
-        x = self.transformer.drop(tok_emb + pos_emb)
+        
+        # add register tokens
+        if self.config.n_regist > 0:
+            x = self.transformer.drop(tok_emb + pos_emb[self.config.n_regist:, :])
+            register_tokens = nn.Parameter(torch.zeros(1, self.config.n_regist, self.config.n_embd))
+            register_tokens = register_tokens + pos_emb[:self.config.n_regist, :]
+            register_tokens = register_tokens.expand(b, -1, -1)
+            x = torch.cat((register_tokens, x), dim=1)
+        else:
+            x = self.transformer.drop(tok_emb + pos_emb)
+
         for block in self.transformer.h:
             x = block(x)
         x = self.transformer.ln_f(x)
@@ -276,6 +287,8 @@ class GPT(nn.Module):
         if targets is not None:
             # if we are given some desired targets also calculate the loss
             logits = self.lm_head(x)
+            if self.config.n_regist > 0:
+                logits = logits[:, self.config.n_regist:, :]
             loss = F.cross_entropy(logits.view(-1, logits.size(-1)), targets.view(-1), ignore_index=-1)
         else:
             # inference-time mini-optimization: only forward the lm_head on the very last position
