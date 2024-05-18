@@ -123,8 +123,8 @@ class GPTConfig:
     bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
 
     #new params
-    query_size = 64
-    key_size = 64
+    query_size: int = 64
+    key_size: int = 64
 
 class GPT(nn.Module):
 
