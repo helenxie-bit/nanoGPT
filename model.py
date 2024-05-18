@@ -273,7 +273,7 @@ class GPT(nn.Module):
         # add register tokens
         if self.config.n_regist > 0:
             x = self.transformer.drop(tok_emb + pos_emb[self.config.n_regist:, :])
-            register_tokens = nn.Parameter(torch.zeros(1, self.config.n_regist, self.config.n_embd), device=device)
+            register_tokens = nn.Parameter(torch.zeros(1, self.config.n_regist, self.config.n_embd, dtype=torch.long, device=device))
             register_tokens = register_tokens + pos_emb[:self.config.n_regist, :]
             register_tokens = register_tokens.expand(b, -1, -1)
             x = torch.cat((register_tokens, x), dim=1)
