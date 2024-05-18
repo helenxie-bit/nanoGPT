@@ -230,6 +230,7 @@ class GPTConfig:
     mlp_type: str = 'mlp1' # 'mlp1' or 'mlp2'
     n_regist: int = 0
     abs_softmax: bool = False
+    # just test
 
 class GPT(nn.Module):
 
