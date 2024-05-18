@@ -26,6 +26,11 @@ class LayerNorm(nn.Module):
     def forward(self, input):
         return F.layer_norm(input, self.weight.shape, self.weight, self.bias, 1e-5)
 
+class AbsSoftmax(nn.Module):
+    def forward(self, x):
+        x_abs = x.abs()
+        return x_abs / x_abs.sum(dim=-1, keepdim=True)
+
 class CausalSelfAttention(nn.Module):
 
     def __init__(self, config):
@@ -46,6 +51,7 @@ class CausalSelfAttention(nn.Module):
         self.head_size = config.head_size
         self.dropout = config.dropout
         self.is_causal = config.is_causal
+        self.abs_softmax = config.abs_softmax
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
         self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
         if not self.flash:
@@ -67,16 +73,20 @@ class CausalSelfAttention(nn.Module):
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, C // nh)
 
         # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
-        if self.flash:
+        # if self.flash:
             # efficient attention using Flash Attention CUDA kernels
-            y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=self.dropout if self.training else 0, is_causal=self.is_causal)
+            # y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=self.dropout if self.training else 0, is_causal=self.is_causal)
+        # else:
+        # manual implementation of attention
+        att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
+        if self.abs_softmax:
+            att = att.masked_fill(self.bias[:,:,:T,:T] == 0, 0.0)
+            att = AbsSoftmax(att)
         else:
-            # manual implementation of attention
-            att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
             att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float('-inf'))
             att = F.softmax(att, dim=-1)
-            att = self.attn_dropout(att)
-            y = att @ v # (B, nh, T, T) x (B, nh, T, C // nh) -> (B, nh, T, C // nh)
+        att = self.attn_dropout(att)
+        y = att @ v # (B, nh, T, T) x (B, nh, T, C // nh) -> (B, nh, T, C // nh)
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
 
         # output projection
@@ -106,6 +116,7 @@ class SlidingWindowAttention(nn.Module):
         self.dropout = config.dropout
         self.is_causal = config.is_causal
         self.n_regist = config.n_regist
+        self.abs_softmax = config.abs_softmax
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
         self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
         # sliding window mask to ensure that attention is only applied to the fixed context window
@@ -132,17 +143,21 @@ class SlidingWindowAttention(nn.Module):
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, C // nh)
 
         # sliding window attention; (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
-        if self.flash:
+        # if self.flash:
             # efficient attention using Flash Attention CUDA kernels
-            self.mask = self.mask.to(x.device)
-            y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=self.mask, dropout_p=self.dropout if self.training else 0, is_causal=self.is_causal)
+            # self.mask = self.mask.to(x.device)
+            # y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=self.mask, dropout_p=self.dropout if self.training else 0, is_causal=self.is_causal)
+        # else:
+        # manual implementation of attention
+        att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
+        if self.abs_softmax:
+            att = att.masked_fill(self.bias[:,:,:T,:T] == 0, 0.0)
+            att = AbsSoftmax(att)
         else:
-            # manual implementation of attention
-            att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
             att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float('-inf'))
             att = F.softmax(att, dim=-1)
-            att = self.attn_dropout(att)
-            y = att @ v # (B, nh, T, T) x (B, nh, T, C // nh) -> (B, nh, T, C // nh)
+        att = self.attn_dropout(att)
+        y = att @ v # (B, nh, T, T) x (B, nh, T, C // nh) -> (B, nh, T, C // nh)
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
 
         # output projection
@@ -212,6 +227,7 @@ class GPTConfig:
     is_causal: bool = True
     mlp_type: str = 'mlp1' # 'mlp1' or 'mlp2'
     n_regist: int = 0
+    abs_softmax: bool = False
 
 class GPT(nn.Module):
 
@@ -434,7 +450,10 @@ class GPT(nn.Module):
                 v, _ = torch.topk(logits, min(top_k, logits.size(-1)))
                 logits[logits < v[:, [-1]]] = -float('Inf')
             # apply softmax to convert logits to (normalized) probabilities
-            probs = F.softmax(logits, dim=-1)
+            if self.config.abs_softmax:
+                probs = AbsSoftmax(logits)
+            else:
+                probs = F.softmax(logits, dim=-1)
             # sample from the distribution
             idx_next = torch.multinomial(probs, num_samples=1)
             # append sampled index to the running sequence and continue
