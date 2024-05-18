@@ -264,7 +264,7 @@ class GPT(nn.Module):
         device = idx.device
         b, t = idx.size()
         assert t + self.config.n_regist <= self.config.block_size, f"Cannot forward sequence of length {t}, block size is only {self.config.block_size}"
-        pos = torch.arange(0, t, dtype=torch.long, device=device) # shape (t)
+        pos = torch.arange(0, self.config.block_size, dtype=torch.long, device=device) # shape (t)
 
         # forward the GPT model itself
         tok_emb = self.transformer.wte(idx) # token embeddings of shape (b, t, n_embd)
@@ -272,9 +272,9 @@ class GPT(nn.Module):
         
         # add register tokens
         if self.config.n_regist > 0:
-            x = self.transformer.drop(tok_emb + pos_emb)
+            x = self.transformer.drop(tok_emb + pos_emb[self.config.n_regist:, :])
             register_tokens = nn.Parameter(torch.zeros(1, self.config.n_regist, self.config.n_embd, device=device))
-            #register_tokens = register_tokens + pos_emb[:self.config.n_regist, :]
+            register_tokens = register_tokens + pos_emb[:self.config.n_regist, :]
             register_tokens = register_tokens.expand(b, -1, -1)
             x = torch.cat((register_tokens, x), dim=1)
         else:
