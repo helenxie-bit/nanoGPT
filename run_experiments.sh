@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Install necessary packages
+echo "Installing necessary packages..."
+pip install torch numpy transformers datasets tiktoken wandb tqdm matplotlib
+
+# Prepare data
+echo "Preparing data..."
+python data/shakespeare_char/prepare.py
+
 # Basic configuration
 echo "Running basic configuration (q, k size = 64, CausalSelfAttention, standard MLP)..."
 python train.py config/train_shakespeare_char.py --wandb_log=True --wandb_run_name="run0"
