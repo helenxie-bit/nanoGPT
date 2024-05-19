@@ -1,41 +1,56 @@
 #!/bin/bash
 
 # Basic configuration
-echo "Running basic configuration (n_embd/n_head = 384/6 = 64, CausalSelfAttention, standard MLP)..."
-python train.py config/train_shakespeare_char.py --wandb_log=True
+echo "Running basic configuration (q, k size = 64, CausalSelfAttention, standard MLP)..."
+python train.py config/train_shakespeare_char.py --wandb_log=True --wandb_run_name="run0"
 
-# Configuration with different dimensionality of q, k, v
-echo "Running configuration (n_embd/n_head = 192/6 = 32)..."
-python train.py config/train_shakespeare_char.py --n_embd=192 --n_head=6 --wandb_log=True
+# Configuration with different dimensionality of q, k
+echo "Running configuration (q, k size = 32)..."
+python train.py config/train_shakespeare_char.py --head_size=32  --wandb_log=True --wandb_run_name="run1(q,k_size=32)"
 
-echo "Running configuration (n_embd/n_head = 48/6 = 8)..."
-python train.py config/train_shakespeare_char.py --n_embd=48 --n_head=6 --wandb_log=True
+echo "Running configuration (q, k size = 8)..."
+python train.py config/train_shakespeare_char.py --head_size=8 --wandb_log=True --wandb_run_name="run2(q,k_size=8)"
 
 # Configuration with sliding window attention
 echo "Running configuration with sliding window attention (window_size = 100)..."
-python train.py config/train_shakespeare_char.py --sliding_window_attention=True --window_size=100 --wandb_log=True
+python train.py config/train_shakespeare_char.py --is_causal=False --window_size=100 --wandb_log=True --wandb_run_name="run3(window_size=100)"
 
 echo "Running configuration with sliding window attention (window_size = 10)..."
-python train.py config/train_shakespeare_char.py --sliding_window_attention=True --window_size=10 --wandb_log=True
+python train.py config/train_shakespeare_char.py --is_causal=False --window_size=10 --wandb_log=True --wandb_run_name="run4(window_size=10)"
 
 echo "Running configuration with sliding window attention (window_size = 3)..."
-python train.py config/train_shakespeare_char.py --sliding_window_attention=True --window_size=3 --wandb_log=True
+python train.py config/train_shakespeare_char.py --is_causal=False --window_size=3 --wandb_log=True --wandb_run_name="run5(window_size=3)"
+
+echo "Running configuration with sliding window attention (window_size = 1)..."
+python train.py config/train_shakespeare_char.py --is_causal=False --window_size=1 --wandb_log=True --wandb_run_name="run6(window_size=1)"
+
+echo "Running configuration with sliding window attention (window_size = 0)..."
+python train.py config/train_shakespeare_char.py --is_causal=False --window_size=0 --wandb_log=True --wandb_run_name="run7(window_size=0)"
 
 # Configuration with different MLP
 echo "Running configuration with different MLP..."
-python train.py config/train_shakespeare_char.py --mlp_type=type2 --wandb_log=True
+python train.py config/train_shakespeare_char.py --mlp_type="mlp2" --wandb_log=True --wandb_run_name="run8(mlp2)"
 
 # Configuration with register tokens
 echo "Running configuration with register tokens (n_regist = 1)..."
-python train.py config/train_shakespeare_char.py --n_regist=1 --wandb_log=True
+python train.py config/train_shakespeare_char.py --n_regist=1 --wandb_log=True --wandb_run_name="run9(n_regist=1)"
 
 echo "Running configuration with register tokens (n_regist = 5)..."
-python train.py config/train_shakespeare_char.py --n_regist=5 --wandb_log=True
+python train.py config/train_shakespeare_char.py --n_regist=5 --wandb_log=True --wandb_run_name="run10(n_regist=5)"
+
+echo "Running configuration with register tokens (n_regist = 10)..."
+python train.py config/train_shakespeare_char.py --n_regist=10 --wandb_log=True --wandb_run_name="run11(n_regist=10)"
 
 # Configuration with sliding window attention and register tokens
 echo "Running configuration with sliding window attention and register tokens (window_size = 3, n_regist=1)..."
-python train.py config/train_shakespeare_char.py --sliding_window_attention=True --window_size=3 --n_regist=1 --wandb_log=True
+python train.py config/train_shakespeare_char.py --is_causal=False --window_size=3 --n_regist=1 --wandb_log=True --wandb_run_name="run12(window_size=3,n_regist=1)"
+
+echo "Running configuration with sliding window attention and register tokens (window_size = 3, n_regist=5)..."
+python train.py config/train_shakespeare_char.py --is_causal=False --window_size=3 --n_regist=5 --wandb_log=True --wandb_run_name="run13(window_size=3,n_regist=5)"
+
+echo "Running configuration with sliding window attention and register tokens (window_size = 3, n_regist=10)..."
+python train.py config/train_shakespeare_char.py --is_causal=False --window_size=3 --n_regist=10 --wandb_log=True --wandb_run_name="run14(window_size=3,n_regist=10)"
 
 # Configuration with different softmax layer
 echo "Running configuration with different softmax layer..."
-python train.py config/train_shakespeare_char.py --custom_softmax=True --wandb_log=True
+python train.py config/train_shakespeare_char.py --abs_softmax=True --wandb_log=True --wandb_run_name="run15(abs_softmax)"
